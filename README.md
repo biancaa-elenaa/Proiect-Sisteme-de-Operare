@@ -8,7 +8,7 @@
 
 ## 🧠 Descriere Generală
 
-Acest proiect implementează un **sistem digital de vânătoare de comori** în C, pentru mediul **UNIX/Linux**, folosind funcții și concepte specifice sistemului de operare: lucrul cu fișiere binare, directoare, symlink-uri, logare și apeluri de sistem (`syscalls`).
+Acest proiect implementează un **sistem digital de vânătoare de comori** în C, pentru mediul **UNIX/Linux**, folosind funcții și concepte specifice sistemului de operare: lucrul cu fișiere binare, directoare, symlink-uri, logare și apeluri de sistem.
 
 Proiectul este structurat în **faze**, fiecare adăugând noi funcționalități și consolidând conceptele învățate.
 
@@ -34,10 +34,10 @@ Construirea unui manager (`treasure_manager`) care permite crearea, afișarea, m
 ---
 
 ### 💻 Exemplu comandă:
+
 ```bash
 ./treasure_manager --remove game7 2
-
----
+```
 
 ## 🧱 Structura fișierelor și directoarelor
 
@@ -62,7 +62,7 @@ Construirea unui manager (`treasure_manager`) care permite crearea, afișarea, m
 
 ---
 
-## 📁 Exemplu de structură de directoare
+### 📁 Exemplu de structură de directoare
 
 ```bash
 .
