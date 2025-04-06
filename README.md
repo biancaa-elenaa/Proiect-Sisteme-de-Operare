@@ -33,11 +33,17 @@ Construirea unui manager (`treasure_manager`) care permite crearea, afișarea, m
 
 ---
 
+### 💻 Exemplu comandă:
+```bash
+./treasure_manager --remove game7 2
+
 ## 🧱 Structura fișierelor și directoarelor
 
 - Comorile sunt salvate într-un fișier binar `treasures.b` în interiorul directorului fiecărui hunt.
 - Toate operațiile sunt logate în fișierul text `logged_hunt` din același director.
 - Pentru fiecare `logged_hunt`, se creează un symlink la nivelul directorului principal: `logged_hunt-<hunt_id>`
+- Se folosesc apeluri de sistem: `open()`, `read()`, `write()`, `close()`, `lseek()`
+- Se folosesc: `stat()` și `mkdir()` pentru informații și directoare
 
 ---
 
