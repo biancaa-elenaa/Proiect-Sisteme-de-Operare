@@ -36,6 +36,7 @@ Construirea unui manager (`treasure_manager`) care permite crearea, afișarea, m
 ### 💻 Exemplu comandă:
 ```bash
 ./treasure_manager --remove game7 2
+```bash
 
 ## 🧱 Structura fișierelor și directoarelor
 
