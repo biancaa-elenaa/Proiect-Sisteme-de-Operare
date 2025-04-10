@@ -324,3 +324,8 @@ void remove_treasure(char *hunt_id, int treasure_id)
     }
 
 }
+
+void remove_hunt(char *hunt_id)
+{
+    
+}
