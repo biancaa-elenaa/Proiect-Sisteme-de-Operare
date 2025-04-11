@@ -9,6 +9,7 @@
 #include <sys/types.h> // --^
 #include <time.h>
 #include <dirent.h>
+#include <ctype.h>
 
 
 int is_hunt_directory(char *hunt_id)
@@ -28,7 +29,7 @@ int is_hunt_directory(char *hunt_id)
 void log_action(char *hunt_id, char *action)
 {
     char log_filepath[LEN];
-    snprintf(log_filepath,sizeof(log_filepath),"%s/logged_hunt", hunt_id);
+    snprintf(log_filepath,sizeof(log_filepath),"%s/logged_hunt.log", hunt_id);
 
     int log_f=open(log_filepath, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
     if(log_f == -1)
@@ -49,10 +50,10 @@ void log_action(char *hunt_id, char *action)
 void create_symlink(char* hunt_id)
 {
     char target_path[LEN];
-    snprintf(target_path, sizeof(target_path), "%s/logged_hunt", hunt_id);
+    snprintf(target_path, sizeof(target_path), "%s/logged_hunt.log", hunt_id);
 
     char link_name[LEN];
-    snprintf(link_name, sizeof(link_name), "logged_hunt-%s", hunt_id);
+    snprintf(link_name, sizeof(link_name), "logged_hunt-%s.log", hunt_id);
 
     struct stat st;
     // verificam daca exista deja un symlink
@@ -78,31 +79,86 @@ Treasure_t *make_treasure()
 
     if(treasure == NULL)
     {
-        perror("Eroare la crearea comorii\n");
+        perror("Eroare la alocarea memoriei pentru comoara comorii\n");
         exit(-1);
     }
 
     printf("Introduceti datele comorii\n");
-    printf("ID Comoara: ");
-    scanf("%d", &treasure->id);
 
-    printf("Username: ");
-    scanf("%s", treasure->username);
+    do{
+        printf("ID Comoara (numar intreg pozitiv): ");
+        if(scanf("%d", &treasure->id) != 1 || treasure->id <=0)
+        {
+            printf("ID invalid! Incercati un numar natural pozitiv\n");
+            while( getchar() != '\n');
+        } else break;
+    }while(1);
+
+
+    do{
+        int valid=1;
+        printf("Username (fara spatii): ");
+        while( getchar() != '\n');
+
+        fgets(treasure->username, sizeof(treasure->username), stdin);
+
+        treasure->username[strcspn(treasure->username,"\n")] = '\0';
+
+        for(int i=0;i<strlen(treasure->username);i++)
+        {
+            if(isspace(treasure->username[i]))
+            {
+                valid=0;
+                break;
+            }
+        }
+        if(strlen(treasure->username) == 0 || !valid)
+        {
+            printf("Username invalid!\n");
+        }else break;
+    }while(1);
+    
 
     printf("Coordonate GPS:\n");
-    printf("Latitudine: ");
-    scanf("%f", &treasure->GPS_latitude);
-    printf("Longitudine: ");
-    scanf("%f",&treasure->GPS_longitude);
+
+    do{
+        printf("Latitudine: ");
+        if(scanf("%f", &treasure->GPS_latitude) != 1 )
+        {
+            printf("Latitudine invalida!\n");
+        }else break;
+    }while(1);
+
+    do{
+        printf("Longitudine: ");
+        if( scanf("%f",&treasure->GPS_longitude) != 1 )
+        {
+            printf("Longitudine invalida!\n");
+        }else break;
+    }while(1);
 
     while(getchar() != '\n');
-    printf("Indicatie: ");
-    fgets(treasure->clue,sizeof(treasure->clue),stdin);
 
-    printf("Valoare: ");
-    scanf("%d", &treasure->value);
+    do{
+        printf("Indicatie: ");
+        fgets(treasure->clue,sizeof(treasure->clue),stdin);
+
+        if(strlen(treasure->clue) == 0 || treasure->clue[0] == '\n')
+        {
+            printf("Indicatie invalida\n");
+        }else break;
+    }while(1);
+
+    do{
+        printf("Valoare (numar pozitiv): ");
+        if(scanf("%d", &treasure->value) != 1 || treasure->value < 0)
+        {
+            printf("Valoare invalida!\n");
+        }else break;
+    }while(1);
 
     while(getchar() != '\n');
+
     return treasure;
 }
 
@@ -117,12 +173,12 @@ void add_treasure(char* hunt_id)
     Treasure_t *new_treasure = make_treasure();
 
     char filepath[LEN];
-    snprintf(filepath,sizeof(filepath),"%s/treasures.b",hunt_id);
+    snprintf(filepath,sizeof(filepath),"%s/treasures.bin",hunt_id);
 
     int f = open(filepath, O_RDWR | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
     if(f == -1)
     {
-        perror("Eroare la deschiderea fisierului treasures.b");
+        perror("Eroare la deschiderea fisierului treasures.bin");
         free(new_treasure);
         return;
     }
@@ -200,7 +256,7 @@ void list_treasures(char* hunt_id)
     struct dirent *dir_file;
     while((dir_file = readdir(director)) != NULL)
     {
-        if(strstr(dir_file->d_name,".b") != NULL)
+        if(strstr(dir_file->d_name,".bin") != NULL)
         {
             char filepath[LEN];
             snprintf(filepath,sizeof(filepath), "%s/%s", hunt_id, dir_file->d_name);
@@ -219,12 +275,12 @@ void list_treasures(char* hunt_id)
 void view_treasure(char* hunt_id,int treasure_id)
 {
     char filepath[LEN];
-    snprintf(filepath,sizeof(filepath),"%s/treasures.b",hunt_id);
+    snprintf(filepath,sizeof(filepath),"%s/treasures.bin",hunt_id);
 
     int f = open(filepath,O_RDONLY);
     if(f == -1)
     {
-        perror("Eroare la deschiderea fisierului treasures.b!\n");
+        perror("Eroare la deschiderea fisierului treasures.bin!\n");
         return;
     }
 
@@ -255,7 +311,7 @@ void view_treasure(char* hunt_id,int treasure_id)
 void remove_treasure(char *hunt_id, int treasure_id)
 {
     char filepath[LEN];
-    snprintf(filepath,sizeof(filepath), "%s/treasures.b",hunt_id);
+    snprintf(filepath,sizeof(filepath), "%s/treasures.bin",hunt_id);
 
     int f = open(filepath,O_RDONLY);
     if(f == -1)
@@ -265,7 +321,7 @@ void remove_treasure(char *hunt_id, int treasure_id)
     }
 
     char temp_filepath[LEN];
-    snprintf(temp_filepath, sizeof(temp_filepath), "%s/temp.b", hunt_id);
+    snprintf(temp_filepath, sizeof(temp_filepath), "%s/temp.bin", hunt_id);
 
     int temp_f = open(temp_filepath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if(temp_f == -1)
@@ -295,7 +351,7 @@ void remove_treasure(char *hunt_id, int treasure_id)
     {
         if(remove(filepath) == -1)
         {
-            perror("Eroare la stergerea fisierului .b\n");
+            perror("Eroare la stergerea fisierului .bin\n");
             return;
         } 
         if(rename(temp_filepath,filepath) == -1)
@@ -327,5 +383,63 @@ void remove_treasure(char *hunt_id, int treasure_id)
 
 void remove_hunt(char *hunt_id)
 {
-    
+    char answer[10];
+    printf("Sigur doriti sa stergeti acest hunt? yes/no\n");
+    scanf("%s",answer);
+
+    if(strcmp(answer,"no") == 0)
+    {
+        printf("Hunt-ul nu va fi sters!\n");
+        return ;
+    }
+    else if(strcmp(answer,"yes") == 0)
+    {
+        DIR *director = opendir(hunt_id);
+        if(director == NULL)
+        {
+            perror("Eroare la deschiderea directorului\n");
+            return;
+        }
+
+        struct dirent *files;
+        char filepath[LEN];
+
+        while( (files = readdir(director)) != NULL )
+        {
+            if(strcmp(files->d_name, ".") == 0 || strcmp(files->d_name, "..") == 0)
+                continue;
+
+            snprintf(filepath,sizeof(filepath), "%s/%s", hunt_id, files->d_name);
+
+            if(remove(filepath) == -1)
+            {
+                perror("Eroare la stergerea fisierului din hunt!\n");
+                closedir(director);
+                return;
+            }
+        }
+
+        closedir(director);
+
+        if(rmdir(hunt_id) == -1)
+        {
+            perror("Eroare la stergerea directorului hunt!\n");
+            return;
+        }
+
+        char symlink_filepath[LEN];
+        snprintf(symlink_filepath,sizeof(symlink_filepath), "logged_hunt-%s.log",hunt_id);
+
+        if(unlink(symlink_filepath) == -1)
+        {
+            perror("Eroare la stergerea link-ului simbolic!\n");
+            return ;
+        }
+
+        printf("Hunt-ul %s a fost sters complet!\n", hunt_id);
+    }
+    else
+    {
+        printf("Raspuns gresit! Incercati yes/no\n");
+    }
 }

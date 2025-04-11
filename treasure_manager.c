@@ -55,5 +55,14 @@ int main(int argc, char** argv)
         }
         remove_treasure(argv[2],atoi(argv[3]));
     }
+    else if(strcmp(action, "--remove_hunt") == 0)
+    {
+        if( argc != 3)
+        {
+            printf("Argumente gresite!\n Incercati: --remove_hunt <hunt_id>\n");
+            exit(-6);
+        }
+        remove_hunt(argv[2]);
+    }
     return 0;
 }
