@@ -72,6 +72,12 @@ void create_symlink(char* hunt_id)
     }
 }
 
+void clear_stdin()
+{
+    int ch;
+    while((ch = getchar()) != '\n' && ch != EOF);
+}
+
 Treasure_t *make_treasure()
 {
     Treasure_t *treasure = NULL;
@@ -79,7 +85,7 @@ Treasure_t *make_treasure()
 
     if(treasure == NULL)
     {
-        perror("Eroare la alocarea memoriei pentru comoara comorii\n");
+        perror("Eroare la alocarea memoriei pentru comoara\n");
         exit(-1);
     }
 
@@ -87,21 +93,19 @@ Treasure_t *make_treasure()
 
     do{
         printf("ID Comoara (numar intreg pozitiv): ");
-        if(scanf("%d", &treasure->id) != 1 || treasure->id <=0)
+        if(scanf("%d", &treasure->id) != 1 || treasure->id <= 0)
         {
             printf("ID invalid! Incercati un numar natural pozitiv\n");
-            while( getchar() != '\n');
+            clear_stdin();
         } else break;
     }while(1);
-
 
     do{
         int valid=1;
         printf("Username (fara spatii): ");
-        while( getchar() != '\n');
+        clear_stdin();
 
         fgets(treasure->username, sizeof(treasure->username), stdin);
-
         treasure->username[strcspn(treasure->username,"\n")] = '\0';
 
         for(int i=0;i<strlen(treasure->username);i++)
@@ -114,7 +118,7 @@ Treasure_t *make_treasure()
         }
         if(strlen(treasure->username) == 0 || !valid)
         {
-            printf("Username invalid!\n");
+            printf("Username invalid!Nu folositi spatiu!\n");
         }else break;
     }while(1);
     
@@ -126,6 +130,7 @@ Treasure_t *make_treasure()
         if(scanf("%f", &treasure->GPS_latitude) != 1 )
         {
             printf("Latitudine invalida!\n");
+            clear_stdin();
         }else break;
     }while(1);
 
@@ -134,18 +139,31 @@ Treasure_t *make_treasure()
         if( scanf("%f",&treasure->GPS_longitude) != 1 )
         {
             printf("Longitudine invalida!\n");
+            clear_stdin();
         }else break;
     }while(1);
 
-    while(getchar() != '\n');
+    clear_stdin();
 
     do{
         printf("Indicatie: ");
         fgets(treasure->clue,sizeof(treasure->clue),stdin);
 
-        if(strlen(treasure->clue) == 0 || treasure->clue[0] == '\n')
+        treasure->clue[strcspn(treasure->clue, "\n")] = '\0'; //eliminam newline-ul
+
+        int only_spaces=1;
+        for(int i=0;i<strlen(treasure->clue);i++)
         {
-            printf("Indicatie invalida\n");
+            if(!isspace(treasure->clue[i]))
+            {
+                only_spaces = 0;
+                break;
+            }
+        }
+
+        if(strlen(treasure->clue) == 0 || only_spaces)
+        {
+            printf("Indicatie invalida! Indicatia nu poate fi goala!\n");
         }else break;
     }while(1);
 
@@ -154,10 +172,11 @@ Treasure_t *make_treasure()
         if(scanf("%d", &treasure->value) != 1 || treasure->value < 0)
         {
             printf("Valoare invalida!\n");
+            clear_stdin();
         }else break;
     }while(1);
 
-    while(getchar() != '\n');
+    clear_stdin();
 
     return treasure;
 }
@@ -204,8 +223,8 @@ void print_treasure(Treasure_t *treasure)
     printf("ID Comoara: %d\n", treasure->id);
     printf("Nume Utilizator: %s\n",treasure->username);
     printf("Coordonate GPS: Latitudine -> %.6f, Longitudine -> %.6f\n", treasure->GPS_latitude, treasure->GPS_longitude);
-    printf("Indicatie: %s", treasure->clue);
-    printf("Valoare %d\n", treasure->value);
+    printf("Indicatie: %s\n", treasure->clue);
+    printf("Valoare: %d\n", treasure->value);
 }
 
 void printf_treasure_info(char* filepath)
@@ -304,7 +323,7 @@ void view_treasure(char* hunt_id,int treasure_id)
         printf("Nu exista comoara cu ID-ul %d in hunt-ul %s!\n",treasure_id,hunt_id);
     }
 
-    log_action(hunt_id,"Vizualizare comoara");
+    log_action(hunt_id,"S-a vizualizat o comoara!");
     create_symlink(hunt_id);
 } 
 
