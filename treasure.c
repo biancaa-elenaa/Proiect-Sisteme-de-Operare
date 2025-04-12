@@ -42,7 +42,23 @@ void log_action(char *hunt_id, char *action)
     char time_str[LEN];
     strftime(time_str, sizeof(time_str),  "%Y-%m-%d %H:%M:%S", localtime(&current_time));
 
-    dprintf(log_f, "[%s] %s\n", time_str,action);
+    //dprintf(log_f, "[%s] %s\n", time_str,action);
+    char log_message[LEN];
+    int bytes_written = snprintf(log_message,sizeof(log_message),"[%s] %s\n", time_str,action);
+
+    if(bytes_written > 0)
+    {
+        ssize_t rez = write(log_f,log_message,bytes_written);
+
+        if(rez == -1)
+        {
+            perror("Eroare la scrierea in fisier\n");
+        }
+        else if(rez < bytes_written)
+        {
+            fprintf(stderr,"Nu au fost scrisi toti octetii cititi\n");
+        }
+    }
 
     close(log_f);
 }
@@ -212,10 +228,11 @@ void add_treasure(char* hunt_id)
 
     close(f);
 
-    free(new_treasure);
-
-    log_action(hunt_id,"S-a adaugat o comoara noua!");
+    char action[256];
+    snprintf(action,sizeof(action), "S-a adaugat comoara cu ID-ul %d!", new_treasure->id);
+    log_action(hunt_id,action);
     create_symlink(hunt_id);
+    free(new_treasure);
 }
 
 void print_treasure(Treasure_t *treasure)
@@ -321,82 +338,111 @@ void view_treasure(char* hunt_id,int treasure_id)
     if(flag == 0)
     {
         printf("Nu exista comoara cu ID-ul %d in hunt-ul %s!\n",treasure_id,hunt_id);
-    }
+        char action[256];
+        snprintf(action,sizeof(action), "S-a incercat vizualizarea comorii cu ID-ul %d, dar aceasta nu exista!", treasure_id);
+        log_action(hunt_id,action);
+        create_symlink(hunt_id);
 
-    log_action(hunt_id,"S-a vizualizat o comoara!");
-    create_symlink(hunt_id);
+    }
+    else{
+        char action[256];
+        snprintf(action,sizeof(action), "S-a vizualizat comoara cu ID-ul %d!", treasure_id);
+        log_action(hunt_id,action);
+        create_symlink(hunt_id);
+    }
 } 
 
 void remove_treasure(char *hunt_id, int treasure_id)
 {
-    char filepath[LEN];
-    snprintf(filepath,sizeof(filepath), "%s/treasures.bin",hunt_id);
+    char answer[10];
+    printf("Sigur doriti sa stergeti comoara cu ID-ul %d? yes/no\n",treasure_id);
+    scanf("%s", answer);
 
-    int f = open(filepath,O_RDONLY);
-    if(f == -1)
+    if(strcmp(answer,"no") == 0)
     {
-        perror("Eroare la deschiderea fisierului!\n");
+        printf("Comoara nu va fi stearsa!\n");
         return;
     }
-
-    char temp_filepath[LEN];
-    snprintf(temp_filepath, sizeof(temp_filepath), "%s/temp.bin", hunt_id);
-
-    int temp_f = open(temp_filepath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-    if(temp_f == -1)
+    else if(strcmp(answer,"yes") == 0)
     {
-        perror("Eroare la deschiderea fisierului temporar!\n");
+        char filepath[LEN];
+        snprintf(filepath,sizeof(filepath), "%s/treasures.bin",hunt_id);
+
+        int f = open(filepath,O_RDONLY);
+        if(f == -1)
+        {
+            perror("Eroare la deschiderea fisierului!\n");
+            return;
+        }
+
+        char temp_filepath[LEN];
+        snprintf(temp_filepath, sizeof(temp_filepath), "%s/temp.bin", hunt_id);
+
+        int temp_f = open(temp_filepath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        if(temp_f == -1)
+        {
+            perror("Eroare la deschiderea fisierului temporar!\n");
+            close(temp_f);
+            return;
+        }
+
+        Treasure_t treasure;
+        int flag=0; //1 inseamna ca am gasit si am sters comoara
+
+        while(read(f,&treasure,sizeof(Treasure_t)) == sizeof(Treasure_t))
+        {
+            if(treasure.id == treasure_id)
+            {
+                flag=1;
+                continue; // nu adaugam comoara in fisierul temporar
+            }
+            write(temp_f,&treasure,sizeof(Treasure_t));
+        }
+
+        close(f);
         close(temp_f);
-        return;
-    }
 
-    Treasure_t treasure;
-    int flag=0; //1 inseamna ca am gasit si am sters comoara
-
-    while(read(f,&treasure,sizeof(Treasure_t)) == sizeof(Treasure_t))
-    {
-        if(treasure.id == treasure_id)
+        if(flag == 1)
         {
-            flag=1;
-            continue; // nu adaugam comoara in fisierul temporar
+            if(remove(filepath) == -1)
+            {
+                perror("Eroare la stergerea fisierului .bin\n");
+                return;
+            } 
+            if(rename(temp_filepath,filepath) == -1)
+            {
+                perror("Eroare la redenumirea fisierului temporar\n");
+                return;
+            }
+
+            //am sters comoara 
+            printf("Comoara cu ID ul %d a fost stearsa!\n", treasure_id);
+            char action[256];
+            snprintf(action,sizeof(action), "S-a sters comoara cu ID-ul %d!", treasure_id);
+            log_action(hunt_id,action);
+            create_symlink(hunt_id);
         }
-        write(temp_f,&treasure,sizeof(Treasure_t));
-    }
-
-    close(f);
-    close(temp_f);
-
-    if(flag == 1)
-    {
-        if(remove(filepath) == -1)
+        else
         {
-            perror("Eroare la stergerea fisierului .bin\n");
-            return;
-        } 
-        if(rename(temp_filepath,filepath) == -1)
-        {
-            perror("Eroare la redenumirea fisierului temporar\n");
-            return;
+            //stergem fisierul temporar pentru ca este in plus
+
+            if(remove(temp_filepath) == -1)
+            {
+                perror("Eroare la stergerea fisierului temporar!\n");
+                return;
+            }
+            printf("Nu exista comoara cu ID-ul %d pentru a fi stearsa!\n", treasure_id);
+            char action[256];
+            snprintf(action,sizeof(action), "S-a incercat stergerea comoarii cu ID-ul %d, dar aceasta nu exista!", treasure_id);
+            log_action(hunt_id,action);
+            create_symlink(hunt_id);
         }
-
-        //am sters comoara 
-        printf("Comoara cu ID ul %d a fost stearsa!\n", treasure_id);
-        log_action(hunt_id,"S-a sters o comoara!");
-        create_symlink(hunt_id);
     }
     else
     {
-        //stergem fisierul temporar pentru ca este in plus
-
-        if(remove(temp_filepath) == -1)
-        {
-            perror("Eroare la stergerea fisierului temporar!\n");
-            return;
-        }
-        printf("Nu exista comoara cu ID-ul %d pentru a fi stearsa!", treasure_id);
-
-
+        printf("Raspuns gresit! Incercati yes/no!\n");
     }
+
 
 }
 
@@ -459,6 +505,6 @@ void remove_hunt(char *hunt_id)
     }
     else
     {
-        printf("Raspuns gresit! Incercati yes/no\n");
+        printf("Raspuns gresit! Incercati yes/no!\n");
     }
 }

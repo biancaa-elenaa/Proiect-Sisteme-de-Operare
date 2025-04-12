@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     {
         if(argc != 3)
         {
-            printf("Argumente gresite! Incercati --add <hunt_id>\n");
+            printf("Argumente gresite! Incercati: ./treasure_manager --add <hunt_id>\n");
             exit(-2);
         }
         add_treasure(argv[2]);
@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     {
         if(argc != 3)
         {
-            printf("Argumente gresite! Incercati: --list <hunt_id>\n");
+            printf("Argumente gresite! Incercati: ./treasure_manager --list <hunt_id>\n");
             exit(-3);
         }
         list_treasures(argv[2]);
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     {
         if( argc != 4)
         {
-            printf("Argumente gresite! Incercati : --view <hunt_id> <treasure_id>\n");
+            printf("Argumente gresite! Incercati : ./treasure_manager --view <hunt_id> <treasure_id>\n");
             exit(-4);
         }
         view_treasure(argv[2],atoi(argv[3]));
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     {
         if( argc != 4)
         {
-            printf("Argumente gresite! Incercati: --remove_treasure <hunt_id> <treasure_id>\n");
+            printf("Argumente gresite! Incercati: ./treasure_manager --remove_treasure <hunt_id> <treasure_id>\n");
             exit(-5);
         }
         remove_treasure(argv[2],atoi(argv[3]));
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     {
         if( argc != 3)
         {
-            printf("Argumente gresite!\n Incercati: --remove_hunt <hunt_id>\n");
+            printf("Argumente gresite!\n Incercati: ./treasure_manager --remove_hunt <hunt_id>\n");
             exit(-6);
         }
         remove_hunt(argv[2]);
@@ -57,13 +57,13 @@ int main(int argc, char** argv)
     {
         printf("Argumente gresite!\n");
         printf("Incercati: \n");
-        printf("  --add <hunt_id>       -> Adauga o comoara\n");
-        printf("  --list <hunt_id>      -> Afiseaza detaliile despre toate comorile dintr-un hunt\n");
-        printf("  --view <hunt_id> <id> -> Afiseaza detaliile unei comori\n");
-        printf("  --remove_treasure <hunt_id> <id> -> Sterge o comoara\n");
-        printf("  --remove_hunt <hunt_id> -> Sterge un hunt\n");
+        printf("./treasure_manager --add <hunt_id>       -> Adauga o comoara\n");
+        printf(" ./treasure_manager --list <hunt_id>      -> Afiseaza detaliile despre toate comorile dintr-un hunt\n");
+        printf(" ./treasure_manager --view <hunt_id> <id> -> Afiseaza detaliile unei comori\n");
+        printf(" ./treasure_manager --remove_treasure <hunt_id> <id> -> Sterge o comoara\n");
+        printf(" ./treasure_manager --remove_hunt <hunt_id> -> Sterge un hunt\n");
         exit(-1);
     }
-    
+
     return 0;
 }
