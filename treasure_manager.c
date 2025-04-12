@@ -5,18 +5,7 @@
 
 int main(int argc, char** argv)
 {
-    if(argc < 3)
-    {
-        printf("Argumente gresite!\n");
-        printf("Incercati: \n");
-        printf("  --add <hunt_id>       -> Adauga o comoara\n");
-        printf("  --list <hunt_id>      -> Afiseaza detaliile despre toate comorile dintr-un hunt\n");
-        printf("  --view <hunt_id> <id> -> Afiseaza detaliile unei comori\n");
-        printf("  --remove_treasure <hunt_id> <id> -> Sterge o comoara\n");
-        printf("  --remove_hunt <hunt_id> -> Sterge un hunt\n");
-        exit(-1);
-    }
-
+    
     char *action = argv[1];
      
     if(strcmp(action, "--add") == 0)
@@ -64,5 +53,17 @@ int main(int argc, char** argv)
         }
         remove_hunt(argv[2]);
     }
+    else
+    {
+        printf("Argumente gresite!\n");
+        printf("Incercati: \n");
+        printf("  --add <hunt_id>       -> Adauga o comoara\n");
+        printf("  --list <hunt_id>      -> Afiseaza detaliile despre toate comorile dintr-un hunt\n");
+        printf("  --view <hunt_id> <id> -> Afiseaza detaliile unei comori\n");
+        printf("  --remove_treasure <hunt_id> <id> -> Sterge o comoara\n");
+        printf("  --remove_hunt <hunt_id> -> Sterge un hunt\n");
+        exit(-1);
+    }
+    
     return 0;
 }
