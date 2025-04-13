@@ -7,7 +7,18 @@ int main(int argc, char** argv)
 {
     
     char *action = argv[1];
-     
+
+    if(argc < 2)
+    {
+        printf("Argumente gresite!\n");
+        printf("Incercati: \n");
+        printf("./treasure_manager --add <hunt_id>       -> Adauga o comoara\n");
+        printf(" ./treasure_manager --list <hunt_id>      -> Afiseaza detaliile despre toate comorile dintr-un hunt\n");
+        printf(" ./treasure_manager --view <hunt_id> <id> -> Afiseaza detaliile unei comori\n");
+        printf(" ./treasure_manager --remove_treasure <hunt_id> <id> -> Sterge o comoara\n");
+        printf(" ./treasure_manager --remove_hunt <hunt_id> -> Sterge un hunt\n");
+        exit(-1);
+    } 
     if(strcmp(action, "--add") == 0)
     {
         if(argc != 3)
