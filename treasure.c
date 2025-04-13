@@ -121,7 +121,11 @@ Treasure_t *make_treasure()
         printf("Username (fara spatii): ");
         clear_stdin();
 
-        fgets(treasure->username, sizeof(treasure->username), stdin);
+        if(fgets(treasure->username, sizeof(treasure->username), stdin) == NULL)
+        {
+            perror("Eroare la citirea username-ului!\n");
+            return NULL;
+        }
         treasure->username[strcspn(treasure->username,"\n")] = '\0';
 
         for(int i=0;i<strlen(treasure->username);i++)
@@ -163,7 +167,11 @@ Treasure_t *make_treasure()
 
     do{
         printf("Indicatie: ");
-        fgets(treasure->clue,sizeof(treasure->clue),stdin);
+        if(fgets(treasure->clue,sizeof(treasure->clue),stdin) == NULL)
+        {
+            perror("Eroare la citirea indicatiei!\n");
+            return NULL;
+        }
 
         treasure->clue[strcspn(treasure->clue, "\n")] = '\0'; //eliminam newline-ul
 
@@ -356,7 +364,11 @@ void remove_treasure(char *hunt_id, int treasure_id)
 {
     char answer[10];
     printf("Sigur doriti sa stergeti comoara cu ID-ul %d? yes/no\n",treasure_id);
-    scanf("%s", answer);
+    if( scanf("%s", answer) != 1)
+    {
+        perror("Eroare la citirea raspunsului!\n");
+        return;
+    }
 
     if(strcmp(answer,"no") == 0)
     {
@@ -396,7 +408,12 @@ void remove_treasure(char *hunt_id, int treasure_id)
                 flag=1;
                 continue; // nu adaugam comoara in fisierul temporar
             }
-            write(temp_f,&treasure,sizeof(Treasure_t));
+            if(write(temp_f,&treasure,sizeof(Treasure_t)) != sizeof(Treasure_t))
+            {
+                perror("Eroare la scrierea in fisier!\n");
+                return;
+
+            }
         }
 
         close(f);
@@ -450,7 +467,11 @@ void remove_hunt(char *hunt_id)
 {
     char answer[10];
     printf("Sigur doriti sa stergeti acest hunt? yes/no\n");
-    scanf("%s",answer);
+    if( scanf("%s", answer) != 1)
+    {
+        perror("Eroare la citirea raspunsului!\n");
+        return;
+    }
 
     if(strcmp(answer,"no") == 0)
     {
