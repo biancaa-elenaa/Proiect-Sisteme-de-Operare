@@ -290,10 +290,11 @@ void printf_treasure_info(char* filepath)
 
 void list_treasures(char* hunt_id)
 {
+    //printf("Director: '%s'\n",hunt_id);
     DIR *director = opendir(hunt_id);
     if(director==NULL)
     {
-        perror("Eroare la deschiderea directorului\n");
+        perror("Eroare la deschiderea directorului!\n");
         return;
     }
 
@@ -318,6 +319,14 @@ void list_treasures(char* hunt_id)
 
 void view_treasure(char* hunt_id,int treasure_id)
 {
+    DIR *director = opendir(hunt_id);
+    if(director == NULL)
+    {
+        printf("Eroare! Hunt-ul %s nu exista!\n",hunt_id);
+        return;
+    }
+    closedir(director); //l-am deschis doar sa ne asiguram ca exista, deci il inchidem
+
     char filepath[LEN];
     snprintf(filepath,sizeof(filepath),"%s/treasures.bin",hunt_id);
 

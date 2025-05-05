@@ -78,7 +78,7 @@ void process_comand()
     read(op,command,sizeof(command));
     close(op);
 
-    command[strcspn(command, "\n")] = 0;
+    command[strcspn(command, "\r\n")] = 0;
 
     if(strcmp(command, "list_hunts") == 0)
     {
@@ -123,9 +123,14 @@ void process_comand()
 
 
     }
-    else if(strcmp(command, "stop_monitor") == 0)
+    else if(strstr(command, "stop_monitor") != 0)
     {
         usleep(3000000);
+        exit(0);
+    }
+    else if(strcmp(command, "exit") == 0)
+    {
+        printf("[Monitor] Monitorul a fost oprit prin comanda 'exit'!\n");
         exit(0);
     }
     else

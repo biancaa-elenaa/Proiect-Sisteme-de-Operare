@@ -29,11 +29,11 @@ void send_command(const char *cmd)
 {
     if(monitor_pid <= 0 || monitor_exiting)
     {
-        printf("Monitorul nu ruleaza\n");
+        printf("Monitorul nu ruleaza sau a fost oprit\n");
         return;
     }
 
-    int fd = open(CMD_FILE, O_WRONLY | O_CREAT | O_TRUNC, 0777);
+    int fd = open(CMD_FILE, O_WRONLY | O_CREAT | O_TRUNC, 0666);
     if(fd == -1)
     {
         printf("Eroare la deschiderea fisierului\n");
@@ -42,7 +42,7 @@ void send_command(const char *cmd)
     int written = write(fd,cmd,strlen(cmd));
     if(written == -1)
     {
-        printf("Eroare la scriere\n");
+        printf("Eroare la scrierea in fisier\n");
         close(fd);
         return;
     }
@@ -50,7 +50,7 @@ void send_command(const char *cmd)
 
     if(kill(monitor_pid, SIGUSR1) == -1)
     {
-        perror("KILL");
+        printf("Eroare la trimiterea semnalului SIGUSR1 catre monitor\n");
     }
 }
 
@@ -117,7 +117,7 @@ int main()
     {
         printf("treasure_hub> ");
         scanf("%s", command);
-        command[strcspn(command,"\n")] = 0;
+        command[strcspn(command,"\r\n")] = 0;
 
         if(strcmp(command, "start_monitor") == 0)
         {
@@ -147,6 +147,7 @@ int main()
             hunt_id[strcspn(hunt_id, "\n")] =0;
             printf("Introduceti ID-ul comorii: ");
             scanf("%d", &treasure_id);
+
 
             char full_command[200];
             sprintf(full_command, "%s %s %d","view_treasures ",hunt_id,treasure_id);
