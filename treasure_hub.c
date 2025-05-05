@@ -90,6 +90,12 @@ void stop_monitor()
     send_command("stop_monitor");
     monitor_exiting = 1;
 
+    while(monitor_pid > 0 )
+    {
+        sleep(1);
+    }
+    printf("Monitorul a fost oprit!\n");
+
 }
 
 int main()
@@ -132,7 +138,7 @@ int main()
             sprintf(full_command, "%s %s","list_treasures ", hunt_id);
             send_command(full_command);
         }
-        else if(strcmp(command, "view_treasure") == 0)
+        else if(strcmp(command, "view_treasures") == 0)
         {
             char hunt_id[30];
             int treasure_id;
@@ -143,8 +149,8 @@ int main()
             scanf("%d", &treasure_id);
 
             char full_command[200];
-            sprintf(full_command, "%s %s %s","view_treasures ",hunt_id,treasure_id);
-            send_command(command);
+            sprintf(full_command, "%s %s %d","view_treasures ",hunt_id,treasure_id);
+            send_command(full_command);
         }
         else if(strcmp(command, "stop_monitor") == 0)
         {
@@ -157,6 +163,7 @@ int main()
                 printf("Eroare: Monitorul inca ruleaza.\n");
                 printf("Utilizati stop_monitor inainte de aceasta comanda.\n");
             }else{
+                printf("Programul se inchide ...\n");
                 break;
             }
         }
@@ -166,10 +173,10 @@ int main()
             printf("Incercati: \n");
             printf("start_monitor -> Porneste Monitorul\n");
             printf("list_hunts   -> Afiseaza comorile dintr-un hunt si numarul total de comori in fiecare\n");
-            printf("list_treasures <hunt_id>   -> Afiseaza detaliile despre toate comorile dintr-un hunt\n");
-            printf("view <hunt_id> <id> -> Afiseaza detaliile unei comori\n");
+            printf("list_treasures  -> Afiseaza detaliile despre toate comorile dintr-un hunt\n");
+            printf("view_treasures  -> Afiseaza detaliile unei comori\n");
             printf("stop_monitor -> Opreste monitorul\n");
-            printf("exit  -> Daca monitorul inca e pornit, afisaza eroare, altfel termina programul\n")
+            printf("exit  -> Daca monitorul inca e pornit, afisaza eroare, altfel termina programul\n");
             
             
         }

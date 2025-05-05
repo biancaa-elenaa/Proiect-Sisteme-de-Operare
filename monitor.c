@@ -34,7 +34,7 @@ void list_hunts()
     {
         if(files->d_type == DT_DIR && strcmp(files->d_name, ".") != 0 && strcmp(files->d_name, "..") != 0)
         {
-            char treasure_file_path[100];
+            char treasure_file_path[300];
             snprintf(treasure_file_path,sizeof(treasure_file_path), "%s/treasures.bin", files->d_name);
 
             if(access(treasure_file_path, F_OK) == 0)
@@ -97,14 +97,31 @@ void process_comand()
         }
         else
         {
-            printf("[Monitor] eroare hunt_id!\n");
+            printf("[Monitor] Eroare hunt_id!\n");
 
         }
         free(dup);
     }
-    else if(strcmp(command, "view_treasures") == 0)
+    else if(strstr(command, "view_treasures") != 0)
     {
-        //de facut acelasi lucru oarecum ca la list_treasures
+        char *dup = strdup(command);
+        char *token = strtok(dup," "); //view_treasures
+        char *hunt_id = strtok(NULL," "); 
+        char *id = strtok(NULL," ");
+
+        if(hunt_id && id)
+        {
+            int treasure_id = atoi(id);
+            view_treasure(hunt_id,treasure_id);
+        }
+        else
+        {
+            printf("[Monitor] Eroare trebuie introdus atat hunt_id cat si treasure_id");
+        }
+
+        free(dup);
+
+
     }
     else if(strcmp(command, "stop_monitor") == 0)
     {
