@@ -29,7 +29,8 @@ void send_command(const char *cmd)
 {
     if(monitor_pid <= 0 || monitor_exiting)
     {
-        printf("Monitorul nu ruleaza sau a fost oprit\n");
+        printf("Monitorul nu ruleaza sau a fost oprit!\n");
+        printf("Introduceti comanda start_monitor\n");
         return;
     }
 

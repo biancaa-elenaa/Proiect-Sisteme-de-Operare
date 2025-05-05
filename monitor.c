@@ -80,6 +80,10 @@ void process_comand()
 
     command[strcspn(command, "\r\n")] = 0;
 
+    if(strcmp(command,"start_monitor") == 0)
+    {
+        truncate(CMD_FILE,0);
+    }
     if(strcmp(command, "list_hunts") == 0)
     {
         list_hunts();
