@@ -307,6 +307,7 @@ void list_treasures(char* hunt_id)
             snprintf(filepath,sizeof(filepath), "%s/%s", hunt_id, dir_file->d_name);
 
             printf_treasure_info(filepath);
+            fflush(stdout);
         }
     }
 

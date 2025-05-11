@@ -56,6 +56,7 @@ void list_hunts()
 
                 close(f);
                 printf("Hunt: %s | Comori: %d\n", files->d_name,count);
+                //fflush(stdout);
             }
         }
     }
@@ -80,24 +81,26 @@ void process_comand()
 
     command[strcspn(command, "\r\n")] = 0;
 
+
     if(strcmp(command,"start_monitor") == 0)
     {
         truncate(CMD_FILE,0);
     }
-    if(strcmp(command, "list_hunts") == 0)
-    {
-        list_hunts();
+    if(strstr(command, "list_hunts") != 0)
+    {      
+        list_hunts();      
     }
     else if(strstr(command, "list_treasures") != 0)
     {
+        //printf("Comanda '%s'\n",command);
         char *dup = strdup(command);
         char *token = strtok(dup, " "); //list_treasures
-        token = strtok(NULL, " ");
-        token[strcspn(token, "\r\n")] = '\0';
-        printf("hunt_id primit %s\n", token);
-        if(token)
+        char *hunt_id = strtok(NULL, " ");
+        hunt_id[strcspn(hunt_id, "\r\n")] = '\0';
+        //printf("hunt_id transmis '%s'\n",hunt_id);
+        if(hunt_id)
         {
-            list_treasures(token);
+            list_treasures(hunt_id);
         }
         else
         {
@@ -139,14 +142,17 @@ void process_comand()
     }
     else
     {
-        printf("[Monitor] Comanda necunoscuta!\n");
+        printf("[Monitor] Comanda necunoscuta! %s\n", command);
         
     }
+    
     truncate(CMD_FILE,0);
 }
 
 int main()
 {
+    setvbuf(stdout, NULL, _IONBF,0);
+
     struct sigaction sa;
     sa.sa_handler = handle_sigusr1;
     sigemptyset(&sa.sa_mask);
@@ -157,9 +163,7 @@ int main()
         perror("Eroare sigaction\n");
         exit(-1);
     }
-
-    printf("Monitorul a pornit cu PID %d\n", getpid());
-
+    
     while(1)
     {
         pause(); //asteapta dupa semnal
