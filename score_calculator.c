@@ -26,6 +26,8 @@ typedef struct{
 
 int main(int argc, char **argv)
 {
+    setvbuf(stdout,NULL,_IONBF,0);
+    
     if(argc != 2)
     {
         printf("Eroare! Incercati: %s <hunt_id>\n",argv[0]);
@@ -71,6 +73,7 @@ int main(int argc, char **argv)
     for(int i=0;i<count;i++)
     {
         printf("User %s: score = %d\n",users[i].username,users[i].total_score);
+        fflush(stdout);
     }
     return 0;
 }

@@ -24,7 +24,7 @@ void sigchld_handler(int sig)
     monitor_pid = -1;
     monitor_exiting = 0;
 
-    printf("Monitorul a terminat cu statusul : %d\n", WEXITSTATUS(status));
+    //printf("[Hub] Monitorul a terminat cu statusul : %d\n", WEXITSTATUS(status));
 
 }
 
@@ -82,7 +82,7 @@ void start_monitor()
     if(monitor_pid == 0)
     {
         close(pfd[0]); // inchidem capatul de citire in copil
-        dup2(pfd[1],1); //redirectam stdout catre pipe
+        dup2(pfd[1],STDOUT_FILENO); //redirectam stdout catre pipe
         close(pfd[1]); //inchidem duplicatul
 
         execl("./monitor", "monitor", NULL);
@@ -112,6 +112,7 @@ void read_monitor_output()
         {
             buffer[readd] = '\0';
             printf("%s", buffer);
+            fflush(stdout); 
             total_waits = 0; // reset dacă am citit ceva
         }
         else
@@ -144,13 +145,81 @@ void stop_monitor()
 
 }
 
+void calculate_score()
+{
+    DIR *directory = opendir(".");
+    struct dirent *dir;
+
+    if(directory == NULL)
+    {
+        perror("[Hub] Eroare deschidere director curent!\n");
+        return;
+    }
+
+    while((dir = readdir(directory)) != NULL)
+    {
+        if(dir->d_type == DT_DIR && strcmp(dir->d_name,".") != 0 && strcmp(dir->d_name,".."))
+        {
+            char filepath[300];
+            snprintf(filepath,sizeof(filepath),"%s/treasures.bin",dir->d_name);
+
+            if(access(filepath,F_OK) == 0) //daca am reusit sa ajungem la treasure.bin inseamna ca ne aflam intr-un hunt
+            {
+                int pfd1[2];
+                if(pipe(pfd1) == -1)
+                {
+                    perror("Eroare la pipe");
+                    exit(-1);
+                }
+                pid_t pid1;
+                pid1 = fork();
+                if(pid1 == -1)
+                {
+                    perror("Eroare la fork");
+                    exit(-2);
+                }
+
+                if(pid1 == 0)
+                {
+                    //copil
+                    close(pfd1[0]);
+                    dup2(pfd1[1],STDOUT_FILENO); // redirectam iesirea standard
+                    close(pfd1[1]);
+
+                    execl("./score_calculator","score_calculator",dir->d_name,NULL);
+                    perror("Eroare la execl score_calculator");
+                    exit(-3);
+                } else {
+                    // procesul parinte
+                    close(pfd1[1]);
+                    char buffer[10000];
+                    int n;
+                    
+                    printf("Scoruri pentru Hunt-ul : %s\n",dir->d_name);
+                    while((n=read(pfd1[0],buffer,sizeof(buffer)-1)) > 0)
+                    {
+                        buffer[n] = '\0';
+                        printf("%s", buffer);
+                    }
+                    
+                    fflush(stdout);
+                    close(pfd1[0]);
+                    waitpid(pid1,NULL,0);
+                    
+                }
+            }
+        }
+    }
+    closedir(directory);
+}
+
 int main()
 {
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
-
+    setvbuf(stdout,NULL,_IONBF,0);
     if(sigaction(SIGCHLD, &sa, NULL) == -1)
     {
         perror("Eroare sigaction\n");
@@ -224,6 +293,21 @@ int main()
                 printf("[Hub] Programul se inchide ...\n");
                 break;
             }
+        } else if(strcmp(command,"calculate_score") == 0)
+        {
+            
+            if(monitor_pid > 0 && !monitor_exiting)
+            {
+                printf("[Hub] Eroare! Monitorul este inca pornit!\n");
+                printf("[Hub] Opriti monitorul (stop_monitor) inainte de a calcula scorurile!\n");
+                continue;
+            }
+            else{
+                calculate_score();
+
+            }
+            
+            
         }
         else
         {
@@ -235,7 +319,7 @@ int main()
             printf("[Hub] view_treasures  -> Afiseaza detaliile unei comori\n");
             printf("[Hub] stop_monitor -> Opreste monitorul\n");
             printf("[Hub] exit  -> Daca monitorul inca e pornit, afisaza eroare, altfel termina programul\n");
-            
+            printf("[Hub] calculate_score -> Afiseaza scorul fiecarui utilizator din fiecare Hunt\n");
             
         }
     }

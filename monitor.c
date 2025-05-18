@@ -76,7 +76,14 @@ void process_comand()
     }
 
     char command[100];
-    read(op,command,sizeof(command));
+    int reead = read(op,command,sizeof(command)-1);
+    if(reead > 0)
+    {
+        command[reead] = '\0';
+    } else{
+        perror("Eroare la citirea comenzii din fisier");
+        return;
+    }
     close(op);
 
     command[strcspn(command, "\r\n")] = 0;
@@ -145,7 +152,7 @@ void process_comand()
         printf("[Monitor] Comanda necunoscuta! %s\n", command);
         
     }
-    
+
     truncate(CMD_FILE,0);
 }
 
