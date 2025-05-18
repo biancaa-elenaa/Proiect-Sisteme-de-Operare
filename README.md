@@ -62,13 +62,62 @@ Construirea unui manager (`treasure_manager`) care permite crearea, afișarea, m
 
 ---
 
-### 📁 Exemplu de structură de directoare
+## 🧩 Faza 2: Procese și Semnale (Săptămânile 8–9)
+
+### 🎯 Obiectiv:
+Crearea unui program interactiv `treasure_hub` care controlează un proces „monitor”.
+
+### 🧠 Comenzi acceptate în interfața `treasure_hub`:
+
+| Comandă           | Acțiune                                                                 |
+|-------------------|------------------------------------------------------------------------|
+| `start_monitor`   | Pornește un proces `monitor` în background                             |
+| `list_hunts`      | Cere monitorului să afișeze numele și nr. de comori per hunt           |
+| `list_treasures`  | Cere monitorului toate comorile dintr-un hunt                          |
+| `view_treasure`   | Cere monitorului o comoară specifică                                   |
+| `stop_monitor`    | Trimite semnal să oprească monitorul și așteaptă terminarea lui        |
+| `exit`            | Iese doar dacă monitorul este deja oprit, altfel dă eroare             |
+
+### 📡 Comunicare:
+
+- Se folosesc **semnale** (`SIGUSR1`, `SIGCHLD`, etc.)
+- Pentru semnale se folosește `sigaction()` (nu `signal()`!)
+- Informațiile despre comenzi pot fi transmise prin fișiere
+
+---
+
+## 🔗 Faza 3: Pipe-uri, Redirecționări și Procese Externe (Săptămânile 10–11)
+
+### 🎯 Obiectiv:
+Adăugarea de **comunicare prin pipe-uri** și integrarea unui program extern `score_calculator`.
+
+### 🧠 Funcționalități noi:
+
+| Comandă               | Descriere                                                                 |
+|------------------------|--------------------------------------------------------------------------|
+| `calculate_score`      | Creează un proces pentru fiecare hunt și calculează scorurile per utilizator |
+
+### 🛠️ Detalii tehnice:
+
+- `monitor` **trimite outputul** către `treasure_hub` printr-un **pipe**, nu direct pe ecran
+- `score_calculator` poate fi un program C extern sau script
+- Se folosește `dup2()` pentru redirecționarea `stdout`
+- `treasure_hub` citește outputul fiecărui proces `score_calculator` printr-un pipe
+- Outputul conține: scorul total per utilizator (suma valorilor comorilor)
+
+---
+
+## 📦 Structură Finală a Directorului
 
 ```bash
 .
 ├── treasure_manager.c
+├── treasure_hub.c
+├── monitor.c
+├── score_calculator.c
 ├── treasure.c
 ├── treasure.h
+├── Makefile
 ├── README.md
 ├── Hunt1/
 │   ├── treasures.b
