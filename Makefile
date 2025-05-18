@@ -1,17 +1,28 @@
 CC = gcc
-
 CFLAGS = -g -Wall -O3
-
-TARGET = treasure_manager
-
 RM = rm -f
 
-all: $(TARGET)
+# Executabile
+TARGETS = treasure_hub monitor score_calculator
 
-$(TARGET):
-	$(CC) $(CFLAGS) -c treasure.c
-	$(CC) $(CFLAGS) -c treasure_manager.c
-	$(CC) $(CFLAGS) -o $(TARGET) treasure.o treasure_manager.c -lm
+all: $(TARGETS)
 
+# Compilare treasure_hub
+treasure_hub: treasure_hub.o
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+# Compilare monitor
+monitor: monitor.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+# Compilare score_calculator
+score_calculator: score_calculator.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+# Reguli implicite pentru .o
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Clean
 clean:
-	$(RM) $(TARGET)
+	$(RM) *.o $(TARGETS)
